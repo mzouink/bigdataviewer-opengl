@@ -28,41 +28,6 @@
  */
 package bdv;
 
-import bdv.viewer.ConverterSetups;
-import bdv.viewer.ViewerState;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.ActionMap;
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.filechooser.FileFilter;
-
-import net.imglib2.Volatile;
-import net.imglib2.converter.Converter;
-import net.imglib2.display.ColorConverter;
-import net.imglib2.display.RealARGBColorConverter;
-import net.imglib2.display.ScaledARGBConverter;
-import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.volatiles.VolatileARGBType;
-
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
-import org.scijava.ui.behaviour.io.InputTriggerConfig;
-import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
-
 import bdv.cache.CacheControl;
 import bdv.export.ProgressWriter;
 import bdv.export.ProgressWriterConsole;
@@ -85,18 +50,46 @@ import bdv.tools.crop.CropDialog;
 import bdv.tools.transformation.ManualTransformation;
 import bdv.tools.transformation.ManualTransformationEditor;
 import bdv.tools.transformation.TransformedSource;
+import bdv.viewer.ConverterSetups;
 import bdv.viewer.NavigationActions;
 import bdv.viewer.SourceAndConverter;
 import bdv.viewer.ViewerFrame;
 import bdv.viewer.ViewerOptions;
 import bdv.viewer.ViewerPanel;
+import bdv.viewer.ViewerState;
 import mpicbg.spim.data.SpimDataException;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
 import mpicbg.spim.data.sequence.Angle;
 import mpicbg.spim.data.sequence.Channel;
+import net.imglib2.Volatile;
+import net.imglib2.converter.Converter;
+import net.imglib2.display.ColorConverter;
+import net.imglib2.display.RealARGBColorConverter;
+import net.imglib2.display.ScaledARGBConverter;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.volatiles.VolatileARGBType;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.scijava.ui.behaviour.io.InputTriggerConfig;
+import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 import org.scijava.ui.behaviour.util.Actions;
+
+//import javax.swing.*;
+//import javax.swing.filechooser.FileFilter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BigDataViewer
 {
@@ -126,7 +119,7 @@ public class BigDataViewer
 
 	protected final BookmarksEditor bookmarkEditor;
 
-	protected final JFileChooser fileChooser;
+//	protected final JFileChooser fileChooser;
 
 	protected File proposedSettingsFile;
 
@@ -384,96 +377,13 @@ public class BigDataViewer
 
 		helpDialog = new HelpDialog( viewerFrame );
 
-		fileChooser = new JFileChooser();
-		fileChooser.setFileFilter( new FileFilter()
-		{
-			@Override
-			public String getDescription()
-			{
-				return "xml files";
-			}
-
-			@Override
-			public boolean accept( final File f )
-			{
-				if ( f.isDirectory() )
-					return true;
-				if ( f.isFile() )
-				{
-					final String s = f.getName();
-					final int i = s.lastIndexOf( '.' );
-					if ( i > 0 && i < s.length() - 1 )
-					{
-						final String ext = s.substring( i + 1 ).toLowerCase();
-						return ext.equals( "xml" );
-					}
-				}
-				return false;
-			}
-		} );
-
 		final Actions navigationActions = new Actions( inputTriggerConfig, "bdv", "navigation" );
 		navigationActions.install( viewerFrame.getKeybindings(), "navigation" );
 		NavigationActions.install( navigationActions, viewer, options.values.is2D() );
 
 		final Actions bdvActions = new Actions( inputTriggerConfig, "bdv" );
 		bdvActions.install( viewerFrame.getKeybindings(), "bdv" );
-		BigDataViewerActions.install( bdvActions, this );
 
-		final JMenuBar menubar = new JMenuBar();
-		JMenu menu = new JMenu( "File" );
-		menubar.add( menu );
-
-		final ActionMap actionMap = viewerFrame.getKeybindings().getConcatenatedActionMap();
-		final JMenuItem miLoadSettings = new JMenuItem( actionMap.get( BigDataViewerActions.LOAD_SETTINGS ) );
-		miLoadSettings.setText( "Load settings" );
-		menu.add( miLoadSettings );
-
-		final JMenuItem miSaveSettings = new JMenuItem( actionMap.get( BigDataViewerActions.SAVE_SETTINGS ) );
-		miSaveSettings.setText( "Save settings" );
-		menu.add( miSaveSettings );
-
-		menu = new JMenu( "Settings" );
-		menubar.add( menu );
-
-		final JMenuItem miBrightness = new JMenuItem( actionMap.get( BigDataViewerActions.BRIGHTNESS_SETTINGS ) );
-		miBrightness.setText( "Brightness & Color" );
-		menu.add( miBrightness );
-
-		final JMenuItem miVisibility = new JMenuItem( actionMap.get( BigDataViewerActions.VISIBILITY_AND_GROUPING ) );
-		miVisibility.setText( "Visibility & Grouping" );
-		menu.add( miVisibility );
-
-		menu = new JMenu( "Tools" );
-		menubar.add( menu );
-
-		if ( cropDialog != null )
-		{
-			final JMenuItem miCrop = new JMenuItem( actionMap.get( BigDataViewerActions.CROP ) );
-			miCrop.setText( "Crop" );
-			menu.add( miCrop );
-		}
-
-		final JMenuItem miMovie = new JMenuItem( actionMap.get( BigDataViewerActions.RECORD_MOVIE ) );
-		miMovie.setText( "Record Movie" );
-		menu.add( miMovie );
-
-		final JMenuItem miMaxProjectMovie = new JMenuItem( actionMap.get( BigDataViewerActions.RECORD_MAX_PROJECTION_MOVIE ) );
-		miMaxProjectMovie.setText( "Record Max-Projection Movie" );
-		menu.add( miMaxProjectMovie );
-
-		final JMenuItem miManualTransform = new JMenuItem( actionMap.get( BigDataViewerActions.MANUAL_TRANSFORM ) );
-		miManualTransform.setText( "Manual Transform" );
-		menu.add( miManualTransform );
-
-		menu = new JMenu( "Help" );
-		menubar.add( menu );
-
-		final JMenuItem miHelp = new JMenuItem( actionMap.get( BigDataViewerActions.SHOW_HELP ) );
-		miHelp.setText( "Show Help" );
-		menu.add( miHelp );
-
-		viewerFrame.setJMenuBar( menubar );
 	}
 
 	public static BigDataViewer open( final AbstractSpimData< ? > spimData, final String windowTitle, final ProgressWriter progressWriter, final ViewerOptions options )
@@ -594,24 +504,6 @@ public class BigDataViewer
 		return false;
 	}
 
-	public void saveSettings()
-	{
-		fileChooser.setSelectedFile( proposedSettingsFile );
-		final int returnVal = fileChooser.showSaveDialog( null );
-		if ( returnVal == JFileChooser.APPROVE_OPTION )
-		{
-			proposedSettingsFile = fileChooser.getSelectedFile();
-			try
-			{
-				saveSettings( proposedSettingsFile.getCanonicalPath() );
-			}
-			catch ( final IOException e )
-			{
-				e.printStackTrace();
-			}
-		}
-	}
-
 	public void saveSettings( final String xmlFilename ) throws IOException
 	{
 		final Element root = new Element( "Settings" );
@@ -675,23 +567,7 @@ public class BigDataViewer
 		return conf;
 	}
 
-	public void loadSettings()
-	{
-		fileChooser.setSelectedFile( proposedSettingsFile );
-		final int returnVal = fileChooser.showOpenDialog( null );
-		if ( returnVal == JFileChooser.APPROVE_OPTION )
-		{
-			proposedSettingsFile = fileChooser.getSelectedFile();
-			try
-			{
-				loadSettings( proposedSettingsFile.getCanonicalPath() );
-			}
-			catch ( final Exception e )
-			{
-				e.printStackTrace();
-			}
-		}
-	}
+
 
 	public void loadSettings( final String xmlFilename ) throws IOException, JDOMException
 	{
@@ -720,32 +596,8 @@ public class BigDataViewer
 
 	public static void main( final String[] args )
 	{
-//		final String fn = "http://tomancak-mac-17.mpi-cbg.de:8080/openspim/";
-//		final String fn = "/Users/Pietzsch/Desktop/openspim/datasetHDF.xml";
-//		final String fn = "/Users/pietzsch/workspace/data/111010_weber_full.xml";
-//		final String fn = "/Users/Pietzsch/Desktop/spimrec2/dataset.xml";
-//		final String fn = "/Users/pietzsch/Desktop/HisYFP-SPIM/dataset.xml";
-//		final String fn = "/Users/Pietzsch/Desktop/bdv example/drosophila 2.xml";
-//		final String fn = "/Users/pietzsch/Desktop/data/clusterValia/140219-1/valia-140219-1.xml";
-//		final String fn = "/Users/Pietzsch/Desktop/data/catmaid.xml";
-//		final String fn = "src/main/resources/openconnectome-bock11-neariso.xml";
-//		final String fn = "/home/saalfeld/catmaid.xml";
-//		final String fn = "/home/saalfeld/catmaid-fafb00-v9.xml";
-//		final String fn = "/home/saalfeld/catmaid-fafb00-sample_A_cutout_3k.xml";
-//		final String fn = "/home/saalfeld/catmaid-thorsten.xml";
-//		final String fn = "/home/saalfeld/knossos-example.xml";
-//		final String fn = "/Users/Pietzsch/Desktop/data/catmaid-confocal.xml";
-//		final String fn = "/Users/pietzsch/desktop/data/BDV130418A325/BDV130418A325_NoTempReg.xml";
-//		final String fn = "/Users/pietzsch/Desktop/data/valia2/valia.xml";
-//		final String fn = "/Users/pietzsch/workspace/data/fast fly/111010_weber/combined.xml";
-//		final String fn = "/Users/pietzsch/workspace/data/mette/mette.xml";
-//		final String fn = "/Users/tobias/Desktop/openspim.xml";
-//		final String fn = "/Users/pietzsch/Desktop/data/fibsem.xml";
-//		final String fn = "/Users/pietzsch/Desktop/data/fibsem-remote.xml";
-//		final String fn = "/Users/pietzsch/Desktop/url-valia.xml";
-//		final String fn = "/Users/pietzsch/Desktop/data/clusterValia/140219-1/valia-140219-1.xml";
-		final String fn = "/Users/pietzsch/workspace/data/111010_weber_full.xml";
-//		final String fn = "/Volumes/projects/tomancak_lightsheet/Mette/ZeissZ1SPIM/Maritigrella/021013_McH2BsGFP_CAAX-mCherry/11-use/hdf5/021013_McH2BsGFP_CAAX-mCherry-11-use.xml";
+
+		final String fn = "/Users/Marwan/Desktop/Task/grid-3d-stitched-h5/dataset-n5.xml";
 		try
 		{
 			System.setProperty( "apple.laf.useScreenMenuBar", "true" );
