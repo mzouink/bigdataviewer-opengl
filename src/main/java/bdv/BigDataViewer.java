@@ -34,21 +34,11 @@ import bdv.export.ProgressWriterConsole;
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.WrapBasicImgLoader;
 import bdv.spimdata.XmlIoSpimDataMinimal;
-import bdv.tools.HelpDialog;
 import bdv.tools.InitializeViewerState;
-import bdv.tools.RecordMaxProjectionDialog;
-import bdv.tools.RecordMovieDialog;
-import bdv.tools.VisibilityAndGroupingDialog;
-import bdv.tools.bookmarks.Bookmarks;
-import bdv.tools.bookmarks.BookmarksEditor;
-import bdv.tools.brightness.BrightnessDialog;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.tools.brightness.MinMaxGroup;
 import bdv.tools.brightness.RealARGBColorConverterSetup;
 import bdv.tools.brightness.SetupAssignments;
-import bdv.tools.crop.CropDialog;
-import bdv.tools.transformation.ManualTransformation;
-import bdv.tools.transformation.ManualTransformationEditor;
 import bdv.tools.transformation.TransformedSource;
 import bdv.viewer.ConverterSetups;
 import bdv.viewer.NavigationActions;
@@ -76,20 +66,18 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 import org.scijava.ui.behaviour.util.Actions;
 
-//import javax.swing.*;
-//import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+//import javax.swing.*;
+//import javax.swing.filechooser.FileFilter;
 
 public class BigDataViewer
 {
@@ -98,26 +86,6 @@ public class BigDataViewer
 	protected final ViewerPanel viewer;
 
 	protected final SetupAssignments setupAssignments;
-
-	protected final ManualTransformation manualTransformation;
-
-	protected final Bookmarks bookmarks;
-
-	protected final BrightnessDialog brightnessDialog;
-
-	protected final CropDialog cropDialog;
-
-	protected final RecordMovieDialog movieDialog;
-
-	protected final RecordMaxProjectionDialog movieMaxProjectDialog;
-
-	protected final VisibilityAndGroupingDialog activeSourcesDialog;
-
-	protected final HelpDialog helpDialog;
-
-	protected final ManualTransformationEditor manualTransformationEditor;
-
-	protected final BookmarksEditor bookmarkEditor;
 
 	protected File proposedSettingsFile;
 
@@ -311,11 +279,7 @@ public class BigDataViewer
 //		for ( final ConverterSetup cs : converterSetups )
 //			cs.setupChangeListeners().add( requestRepaint );
 
-		manualTransformation = new ManualTransformation( viewer );
-		manualTransformationEditor = new ManualTransformationEditor( viewer, viewerFrame.getKeybindings() );
 
-		bookmarks = new Bookmarks();
-		bookmarkEditor = new BookmarksEditor( viewer, viewerFrame.getKeybindings(), bookmarks );
 
 		final ConverterSetups setups = viewerFrame.getConverterSetups();
 		if ( converterSetups.size() != sources.size() )
@@ -337,24 +301,10 @@ public class BigDataViewer
 				setupAssignments.moveSetupToGroup( setup, group );
 		}
 
-		brightnessDialog = new BrightnessDialog( viewerFrame, setupAssignments );
 
 		if (spimData != null )
 			viewer.getSourceInfoOverlayRenderer().setTimePointsOrdered( spimData.getSequenceDescription().getTimePoints().getTimePointsOrdered() );
 
-		cropDialog = ( spimData == null ) ? null : new CropDialog( viewerFrame, viewer, spimData.getSequenceDescription() );
-
-		movieDialog = new RecordMovieDialog( viewerFrame, viewer, progressWriter );
-		// this is just to get updates of window size:
-		viewer.getDisplay().overlays().add( movieDialog );
-
-		movieMaxProjectDialog = new RecordMaxProjectionDialog( viewerFrame, viewer, progressWriter );
-		// this is just to get updates of window size:
-		viewer.getDisplay().overlays().add( movieMaxProjectDialog );
-
-		activeSourcesDialog = new VisibilityAndGroupingDialog( viewerFrame, viewer.state() );
-
-		helpDialog = new HelpDialog( viewerFrame );
 
 		final Actions navigationActions = new Actions( inputTriggerConfig, "bdv", "navigation" );
 		navigationActions.install( viewerFrame.getKeybindings(), "navigation" );
@@ -437,11 +387,6 @@ public class BigDataViewer
 		return setupAssignments;
 	}
 
-	public ManualTransformationEditor getManualTransformEditor()
-	{
-		return manualTransformationEditor;
-	}
-
 	public boolean tryLoadSettings( final String xmlFilename )
 	{
 		proposedSettingsFile = null;
@@ -481,18 +426,6 @@ public class BigDataViewer
 			}
 		}
 		return false;
-	}
-
-	public void saveSettings( final String xmlFilename ) throws IOException
-	{
-		final Element root = new Element( "Settings" );
-		root.addContent( viewer.stateToXml() );
-		root.addContent( setupAssignments.toXml() );
-		root.addContent( manualTransformation.toXml() );
-		root.addContent( bookmarks.toXml() );
-		final Document doc = new Document( root );
-		final XMLOutputter xout = new XMLOutputter( Format.getPrettyFormat() );
-		xout.output( doc, new FileWriter( xmlFilename ) );
 	}
 
 	/**
@@ -554,9 +487,6 @@ public class BigDataViewer
 		final Element root = doc.getRootElement();
 		viewer.stateFromXml( root );
 		setupAssignments.restoreFromXml( root );
-		manualTransformation.restoreFromXml( root );
-		bookmarks.restoreFromXml( root );
-		activeSourcesDialog.update();
 		viewer.requestRepaint();
 	}
 
