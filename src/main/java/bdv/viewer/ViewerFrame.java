@@ -29,26 +29,18 @@
 package bdv.viewer;
 
 import bdv.TransformEventHandler;
-import bdv.ui.CardPanel;
-import bdv.ui.BdvDefaultCards;
-import bdv.ui.splitpanel.SplitPanel;
-import java.awt.BorderLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.List;
-
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
-
+import bdv.cache.CacheControl;
+import bdv.util.AWTUtils;
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.InputActionBindings;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
-import bdv.cache.CacheControl;
-import bdv.util.AWTUtils;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.List;
 
 /**
  * A {@link JFrame} containing a {@link ViewerPanel} and associated
@@ -61,10 +53,6 @@ public class ViewerFrame extends JFrame
 	private static final long serialVersionUID = 1L;
 
 	private final ViewerPanel viewer;
-
-	private final CardPanel cards;
-
-	private final SplitPanel splitPanel;
 
 	private final InputActionBindings keybindings;
 
@@ -106,13 +94,9 @@ public class ViewerFrame extends JFrame
 		keybindings = new InputActionBindings();
 		triggerbindings = new TriggerBehaviourBindings();
 
-		cards = new CardPanel();
-		BdvDefaultCards.setup( cards, viewer, setups );
-		splitPanel = new SplitPanel( viewer, cards );
-
 		getRootPane().setDoubleBuffered( true );
 //		add( viewer, BorderLayout.CENTER );
-		add( splitPanel, BorderLayout.CENTER );
+		add( viewer, BorderLayout.CENTER );
 		pack();
 		setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
 		addWindowListener( new WindowAdapter()
@@ -146,15 +130,6 @@ public class ViewerFrame extends JFrame
 		return viewer;
 	}
 
-	public CardPanel getCardPanel()
-	{
-		return cards;
-	}
-
-	public SplitPanel getSplitPanel()
-	{
-		return splitPanel;
-	}
 
 	public InputActionBindings getKeybindings()
 	{
