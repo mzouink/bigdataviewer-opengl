@@ -119,29 +119,8 @@ public class BigDataViewer
 
 	protected final BookmarksEditor bookmarkEditor;
 
-//	protected final JFileChooser fileChooser;
-
 	protected File proposedSettingsFile;
 
-	public void toggleManualTransformation()
-	{
-		manualTransformationEditor.toggle();
-	}
-
-	public void initSetBookmark()
-	{
-		bookmarkEditor.initSetBookmark();
-	}
-
-	public void initGoToBookmark()
-	{
-		bookmarkEditor.initGoToBookmark();
-	}
-
-	public void initGoToBookmarkRotation()
-	{
-		bookmarkEditor.initGoToBookmarkRotation();
-	}
 
 	private static String createSetupName( final BasicViewSetup setup )
 	{
@@ -568,7 +547,6 @@ public class BigDataViewer
 	}
 
 
-
 	public void loadSettings( final String xmlFilename ) throws IOException, JDOMException
 	{
 		final SAXBuilder sax = new SAXBuilder();
@@ -603,7 +581,7 @@ public class BigDataViewer
 			System.setProperty( "apple.laf.useScreenMenuBar", "true" );
 
 			final BigDataViewer bdv = open( fn, new File( fn ).getName(), new ProgressWriterConsole(), ViewerOptions.options() );
-
+bdv.expandAndFocusCardPanel();
 //			DumpInputConfig.writeToYaml( System.getProperty( "user.home" ) + "/.bdv/bdvkeyconfig.yaml", bdv.getViewerFrame() );
 		}
 		catch ( final Exception e )
