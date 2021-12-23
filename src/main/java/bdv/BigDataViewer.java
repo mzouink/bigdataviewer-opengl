@@ -560,18 +560,6 @@ public class BigDataViewer
 		viewer.requestRepaint();
 	}
 
-	public void expandAndFocusCardPanel()
-	{
-		viewerFrame.getSplitPanel().setCollapsed( false );
-		viewerFrame.getSplitPanel().getRightComponent().requestFocusInWindow();
-	}
-
-	public void collapseCardPanel()
-	{
-		viewerFrame.getSplitPanel().setCollapsed( true );
-		viewer.requestFocusInWindow();
-	}
-
 	public static void main( final String[] args )
 	{
 
@@ -581,7 +569,7 @@ public class BigDataViewer
 			System.setProperty( "apple.laf.useScreenMenuBar", "true" );
 
 			final BigDataViewer bdv = open( fn, new File( fn ).getName(), new ProgressWriterConsole(), ViewerOptions.options() );
-bdv.expandAndFocusCardPanel();
+
 //			DumpInputConfig.writeToYaml( System.getProperty( "user.home" ) + "/.bdv/bdvkeyconfig.yaml", bdv.getViewerFrame() );
 		}
 		catch ( final Exception e )
