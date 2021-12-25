@@ -96,7 +96,7 @@ public class ViewerFrame extends JFrame
 		triggerbindings = new TriggerBehaviourBindings();
 
 		getRootPane().setDoubleBuffered( true );
-//		add( viewer, BorderLayout.CENTER );
+
 		add( viewer, BorderLayout.CENTER );
 		pack();
 		setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
