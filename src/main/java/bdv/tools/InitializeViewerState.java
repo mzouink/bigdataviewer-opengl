@@ -29,31 +29,28 @@
 package bdv.tools;
 
 import bdv.tools.brightness.ConverterSetup;
+import bdv.tools.brightness.MinMaxGroup;
+import bdv.tools.brightness.SetupAssignments;
+import bdv.util.Affine3DHelpers;
 import bdv.util.Bounds;
 import bdv.viewer.ConverterSetups;
+import bdv.viewer.Source;
+import bdv.viewer.SourceAndConverter;
 import bdv.viewer.ViewerFrame;
-import java.awt.Dimension;
-
+import bdv.viewer.ViewerPanel;
+import bdv.viewer.ViewerState;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.histogram.DiscreteFrequencyDistribution;
 import net.imglib2.histogram.Histogram1d;
 import net.imglib2.histogram.Real1dBinMapper;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.util.LinAlgHelpers;
-import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
-import bdv.tools.brightness.MinMaxGroup;
-import bdv.tools.brightness.SetupAssignments;
-import bdv.util.Affine3DHelpers;
-import bdv.viewer.Source;
-import bdv.viewer.SourceAndConverter;
-import bdv.viewer.ViewerPanel;
-import bdv.viewer.ViewerState;
+import java.awt.*;
 
 public class InitializeViewerState
 {
@@ -76,6 +73,7 @@ public class InitializeViewerState
 	public static void initTransform( final ViewerPanel viewer )
 	{
 		final Dimension dim = viewer.getDisplay().getSize();
+
 		final AffineTransform3D viewerTransform = initTransform( dim.width, dim.height, false, viewer.state().snapshot() );
 		viewer.state().setViewerTransform( viewerTransform );
 	}
@@ -159,6 +157,9 @@ public class InitializeViewerState
 			scale = Math.max( scaleX, scaleY );
 		else
 			scale = Math.min( scaleX, scaleY );
+
+		System.out.println(scale);
+		System.out.println(viewerTransform.toString());
 		viewerTransform.scale( scale );
 
 		// window center offset
